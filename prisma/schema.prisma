@@ -1,0 +1,376 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// GAME VERSIONING
+// ─────────────────────────────────────────────────────────────
+
+model GameVersion {
+  id         String   @id @default(cuid())
+  version    String   @unique // e.g. "2026.08", "current"
+  patchNotes String?
+  isCurrent  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  townHalls      TownHall[]
+  troops         Troop[]
+  heroes         Hero[]
+  heroEquipment  HeroEquipment[]
+  defenses       Defense[]
+  armyMeta       ArmyMeta[]
+  equipmentMeta  EquipmentMeta[]
+  baseMeta       BaseMeta[]
+
+  @@map("game_versions")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TOWN HALLS
+// ─────────────────────────────────────────────────────────────
+
+model TownHall {
+  id                   String  @id @default(cuid())
+  level                Int     @unique
+  maxBuilders          Int     @default(5)
+  maxLaboratoryLevel   Int
+  unlocksHero          String? // Hero name unlocked at this TH
+  gameVersionId        String
+  gameVersion          GameVersion @relation(fields: [gameVersionId], references: [id])
+
+  @@map("town_halls")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TROOPS / SPELLS / PETS / SIEGE
+// ─────────────────────────────────────────────────────────────
+
+model Troop {
+  id             String   @id @default(cuid())
+  apiName        String   // Matches API response "name" field exactly
+  displayName    String
+  category       TroopCategory
+  village        Village
+  // JSON: {"1": 5, "2": 5, "3": 5, ..., "18": 12}
+  maxLevelByTh   Json
+  // JSON: {"1": {"gold": 0}, "2": {"elixir": 25000}, ...}
+  upgradeCosts   Json     @default("{}")
+  // JSON: {"1": 0, "2": 86400, ...} in seconds
+  upgradeTimes   Json     @default("{}")
+  isSuperTroop   Boolean  @default(false)
+  isDarkElixir   Boolean  @default(false)
+  metaScore      Int      @default(50) // 0-100
+  gameVersionId  String
+  gameVersion    GameVersion @relation(fields: [gameVersionId], references: [id])
+
+  @@unique([apiName, gameVersionId])
+  @@map("troops")
+}
+
+enum TroopCategory {
+  TROOP
+  SPELL
+  PET
+  SIEGE_MACHINE
+}
+
+enum Village {
+  HOME
+  BUILDER_BASE
+}
+
+// ─────────────────────────────────────────────────────────────
+// HEROES
+// ─────────────────────────────────────────────────────────────
+
+model Hero {
+  id             String   @id @default(cuid())
+  apiName        String
+  displayName    String
+  village        Village
+  unlockTh       Int
+  // JSON: {"9": 5, "10": 10, ..., "18": 110}
+  maxLevelByTh   Json
+  // JSON: {"1": {"darkElixir": 10000}, ...}
+  upgradeCosts   Json     @default("{}")
+  upgradeTimes   Json     @default("{}")
+  gameVersionId  String
+  gameVersion    GameVersion @relation(fields: [gameVersionId], references: [id])
+
+  @@unique([apiName, gameVersionId])
+  @@map("heroes")
+}
+
+// ─────────────────────────────────────────────────────────────
+// HERO EQUIPMENT
+// ─────────────────────────────────────────────────────────────
+
+model HeroEquipment {
+  id            String    @id @default(cuid())
+  apiName       String
+  displayName   String
+  heroApiName   String    // Which hero it belongs to
+  rarity        EquipmentRarity
+  maxLevel      Int       // 18 for common, 27 for epic
+  unlockTh      Int
+  metaScore     Int       @default(50)
+  useCases      Json      @default("[]") // ["war", "farming", "cwl"]
+  gameVersionId String
+  gameVersion   GameVersion @relation(fields: [gameVersionId], references: [id])
+
+  equipmentMeta EquipmentMeta[]
+
+  @@unique([apiName, gameVersionId])
+  @@map("hero_equipment")
+}
+
+enum EquipmentRarity {
+  COMMON
+  EPIC
+}
+
+// ─────────────────────────────────────────────────────────────
+// DEFENSES (static reference — API doesn't expose levels)
+// ─────────────────────────────────────────────────────────────
+
+model Defense {
+  id            String @id @default(cuid())
+  apiName       String
+  displayName   String
+  village       Village
+  // JSON: {"1": 0, "2": 0, "3": 1, ..., "18": 3}
+  countByTh     Json
+  // JSON: {"3": 5, "4": 7, ..., "18": 12}
+  maxLevelByTh  Json
+  upgradeCosts  Json   @default("{}")
+  upgradeTimes  Json   @default("{}")
+  gameVersionId String
+  gameVersion   GameVersion @relation(fields: [gameVersionId], references: [id])
+
+  @@unique([apiName, gameVersionId])
+  @@map("defenses")
+}
+
+// ─────────────────────────────────────────────────────────────
+// META — ARMIES
+// ─────────────────────────────────────────────────────────────
+
+model ArmyMeta {
+  id             String      @id @default(cuid())
+  townHall       Int
+  name           String
+  category       ArmyCategory
+  // JSON: [{"troop": "Dragon", "count": 10}, ...]
+  composition    Json
+  // JSON: [{"spell": "Lightning Spell", "count": 4}, ...]
+  spells         Json        @default("[]")
+  siege          String?
+  heroStrategy   String?
+  equipmentRec   Json        @default("[]")
+  difficulty     Int         @default(2) // 1=easy, 2=medium, 3=hard
+  metaScore      Int         @default(50)
+  attackSteps    String?     @db.Text
+  strengths      String?
+  weaknesses     String?
+  bestUseCase    String?
+  isPublished    Boolean     @default(false)
+  approvedBy     String?     // User ID
+  source         String      @default("admin")
+  gameVersionId  String
+  gameVersion    GameVersion @relation(fields: [gameVersionId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("army_meta")
+}
+
+enum ArmyCategory {
+  FARMING
+  TROPHY_PUSH
+  WAR
+  CWL
+  GROUND
+  AIR
+  HYBRID
+  BEGINNER
+  ADVANCED
+}
+
+// ─────────────────────────────────────────────────────────────
+// META — EQUIPMENT RECOMMENDATIONS
+// ─────────────────────────────────────────────────────────────
+
+model EquipmentMeta {
+  id              String   @id @default(cuid())
+  townHall        Int
+  heroApiName     String
+  equipmentId     String
+  equipment       HeroEquipment @relation(fields: [equipmentId], references: [id])
+  useCase         String   // "war" | "farming" | "cwl" | "general"
+  // JSON: [{"slot": 1, "equipment": "Giant Gauntlet"}, ...]
+  pairing         Json     @default("[]")
+  score           Int      @default(50)
+  explanation     String?  @db.Text
+  isPublished     Boolean  @default(false)
+  gameVersionId   String
+  gameVersion     GameVersion @relation(fields: [gameVersionId], references: [id])
+  updatedAt       DateTime @updatedAt
+
+  @@map("equipment_meta")
+}
+
+// ─────────────────────────────────────────────────────────────
+// META — BASE STRATEGIES
+// ─────────────────────────────────────────────────────────────
+
+model BaseMeta {
+  id             String   @id @default(cuid())
+  townHall       Int
+  baseType       BaseType
+  strategyName   String
+  strengths      Json     @default("[]")
+  weaknesses     Json     @default("[]")
+  anti3Star      Boolean  @default(false)
+  // NULL = no actual base link (never fake URLs)
+  baseLink       String?
+  aiExplanation  String?  @db.Text
+  isPublished    Boolean  @default(false)
+  gameVersionId  String
+  gameVersion    GameVersion @relation(fields: [gameVersionId], references: [id])
+  updatedAt      DateTime @updatedAt
+
+  @@map("base_meta")
+}
+
+enum BaseType {
+  WAR
+  CWL
+  TROPHY
+  FARMING
+  HYBRID
+}
+
+// ─────────────────────────────────────────────────────────────
+// ANALYTICS — PLAYER SNAPSHOTS
+// ─────────────────────────────────────────────────────────────
+
+model PlayerSnapshot {
+  id                 String   @id @default(cuid())
+  playerTag          String
+  playerName         String
+  townHallLevel      Int
+  rawApiData         Json
+  overallProgress    Float    @default(0)
+  heroProgress       Float    @default(0)
+  troopProgress      Float    @default(0)
+  spellProgress      Float    @default(0)
+  petProgress        Float    @default(0)
+  equipmentProgress  Float    @default(0)
+  offensiveScore     Int      @default(0)
+  defensiveScore     Int      @default(0) // Partial — API limitation noted
+  rushScore          Int      @default(0)
+  warReadiness       Int      @default(0)
+  createdAt          DateTime @default(now())
+
+  @@index([playerTag, createdAt])
+  @@map("player_snapshots")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ANALYTICS — CLAN SNAPSHOTS
+// ─────────────────────────────────────────────────────────────
+
+model ClanSnapshot {
+  id                 String   @id @default(cuid())
+  clanTag            String
+  clanName           String
+  rawApiData         Json
+  powerScore         Int      @default(0)
+  offensiveStrength  Int      @default(0)
+  defensiveStrength  Int      @default(0)
+  warReadinessAvg    Float    @default(0)
+  thDistribution     Json     @default("{}")
+  createdAt          DateTime @default(now())
+
+  @@index([clanTag, createdAt])
+  @@map("clan_snapshots")
+}
+
+// ─────────────────────────────────────────────────────────────
+// SEARCH / ANALYTICS LOGS
+// ─────────────────────────────────────────────────────────────
+
+model SearchLog {
+  id             String     @id @default(cuid())
+  type           SearchType
+  tag            String
+  ipHash         String     // Hashed for privacy
+  cacheHit       Boolean    @default(false)
+  responseTimeMs Int        @default(0)
+  createdAt      DateTime   @default(now())
+
+  @@index([createdAt])
+  @@index([type, createdAt])
+  @@map("search_logs")
+}
+
+enum SearchType {
+  PLAYER
+  CLAN
+}
+
+// ─────────────────────────────────────────────────────────────
+// USERS
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  image         String?
+  role          UserRole @default(USER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  savedPlayers  SavedPlayer[]
+  savedClans    SavedClan[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model SavedPlayer {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playerTag  String
+  nickname   String?
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, playerTag])
+  @@map("saved_players")
+}
+
+model SavedClan {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clanTag   String
+  nickname  String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, clanTag])
+  @@map("saved_clans")
+}

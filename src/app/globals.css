@@ -1,0 +1,271 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN SYSTEM — ClashWinner Dark Gaming Theme
+   ============================================================ */
+
+:root {
+  /* Core palette */
+  --cw-bg-base:         #080c14;
+  --cw-bg-surface:      #0e1420;
+  --cw-bg-elevated:     #141c2e;
+  --cw-bg-card:         #1a2438;
+  --cw-bg-card-hover:   #1f2c44;
+
+  /* Brand gradient */
+  --cw-gold:            #f5c842;
+  --cw-gold-light:      #fde68a;
+  --cw-gold-dark:       #d4a017;
+  --cw-blue:            #3b82f6;
+  --cw-blue-light:      #60a5fa;
+  --cw-purple:          #8b5cf6;
+  --cw-purple-light:    #a78bfa;
+  --cw-cyan:            #06b6d4;
+  --cw-green:           #10b981;
+  --cw-red:             #ef4444;
+  --cw-orange:          #f97316;
+
+  /* Text */
+  --cw-text-primary:    #f0f4ff;
+  --cw-text-secondary:  #94a3b8;
+  --cw-text-muted:      #64748b;
+
+  /* Borders */
+  --cw-border:          rgba(255,255,255,0.06);
+  --cw-border-accent:   rgba(245,200,66,0.3);
+
+  /* Shadows */
+  --cw-shadow-sm:       0 1px 3px rgba(0,0,0,0.4);
+  --cw-shadow-md:       0 4px 16px rgba(0,0,0,0.5);
+  --cw-shadow-glow-gold: 0 0 20px rgba(245,200,66,0.15);
+  --cw-shadow-glow-blue: 0 0 20px rgba(59,130,246,0.15);
+
+  /* Radius */
+  --cw-radius-sm:       6px;
+  --cw-radius-md:       10px;
+  --cw-radius-lg:       16px;
+  --cw-radius-xl:       24px;
+}
+
+@theme inline {
+  --color-background:   var(--cw-bg-base);
+  --color-foreground:   var(--cw-text-primary);
+  --font-sans:          'Inter', system-ui, sans-serif;
+  --font-display:       'Rajdhani', 'Inter', sans-serif;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--cw-bg-base);
+  color: var(--cw-text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--cw-bg-surface); }
+::-webkit-scrollbar-thumb {
+  background: rgba(245,200,66,0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(245,200,66,0.5); }
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+.cw-card {
+  background: var(--cw-bg-card);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-lg);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.cw-card:hover {
+  border-color: rgba(245,200,66,0.15);
+  box-shadow: var(--cw-shadow-glow-gold);
+}
+
+.cw-glass {
+  background: rgba(20, 28, 46, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--cw-border);
+}
+
+.cw-gradient-text {
+  background: linear-gradient(135deg, var(--cw-gold) 0%, var(--cw-gold-light) 50%, var(--cw-orange) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.cw-gradient-text-blue {
+  background: linear-gradient(135deg, var(--cw-blue) 0%, var(--cw-cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.cw-btn-primary {
+  background: linear-gradient(135deg, var(--cw-gold-dark) 0%, var(--cw-gold) 100%);
+  color: #0c1018;
+  font-weight: 700;
+  border-radius: var(--cw-radius-md);
+  padding: 0.625rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(245,200,66,0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.cw-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245,200,66,0.4);
+}
+
+.cw-btn-secondary {
+  background: transparent;
+  color: var(--cw-text-primary);
+  font-weight: 600;
+  border-radius: var(--cw-radius-md);
+  padding: 0.625rem 1.5rem;
+  border: 1px solid var(--cw-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.cw-btn-secondary:hover {
+  border-color: rgba(245,200,66,0.4);
+  background: rgba(245,200,66,0.05);
+}
+
+.cw-btn-blue {
+  background: linear-gradient(135deg, #1d4ed8 0%, var(--cw-blue) 100%);
+  color: #fff;
+  font-weight: 700;
+  border-radius: var(--cw-radius-md);
+  padding: 0.625rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.cw-btn-blue:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(59,130,246,0.4);
+}
+
+.cw-input {
+  background: var(--cw-bg-elevated);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-md);
+  color: var(--cw-text-primary);
+  padding: 0.75rem 1rem;
+  width: 100%;
+  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+.cw-input::placeholder { color: var(--cw-text-muted); }
+.cw-input:focus {
+  border-color: var(--cw-gold);
+  box-shadow: 0 0 0 3px rgba(245,200,66,0.1);
+}
+
+.cw-progress-track {
+  background: rgba(255,255,255,0.07);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.cw-progress-fill {
+  border-radius: 99px;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.cw-progress-gold { background: linear-gradient(90deg, var(--cw-gold-dark), var(--cw-gold)); }
+.cw-progress-blue { background: linear-gradient(90deg, #1d4ed8, var(--cw-blue-light)); }
+.cw-progress-green { background: linear-gradient(90deg, #047857, var(--cw-green)); }
+.cw-progress-red { background: linear-gradient(90deg, #b91c1c, var(--cw-red)); }
+.cw-progress-purple { background: linear-gradient(90deg, #6d28d9, var(--cw-purple-light)); }
+
+.cw-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+.cw-badge-gold  { background: rgba(245,200,66,0.12); color: var(--cw-gold);   border-color: rgba(245,200,66,0.3); }
+.cw-badge-blue  { background: rgba(59,130,246,0.12); color: var(--cw-blue-light); border-color: rgba(59,130,246,0.3); }
+.cw-badge-green { background: rgba(16,185,129,0.12); color: var(--cw-green);  border-color: rgba(16,185,129,0.3); }
+.cw-badge-red   { background: rgba(239,68,68,0.12);  color: var(--cw-red);    border-color: rgba(239,68,68,0.3); }
+.cw-badge-purple{ background: rgba(139,92,246,0.12); color: var(--cw-purple-light); border-color: rgba(139,92,246,0.3); }
+.cw-badge-gray  { background: rgba(100,116,139,0.12); color: var(--cw-text-secondary); border-color: rgba(100,116,139,0.3); }
+
+.cw-dot-online  { width:8px;height:8px;border-radius:50%;background:var(--cw-green); box-shadow:0 0 6px var(--cw-green); }
+
+.cw-hero-bg {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(245,200,66,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 60% 80%, rgba(139,92,246,0.05) 0%, transparent 60%),
+    var(--cw-bg-base);
+}
+
+.cw-grid-pattern {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.cw-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.cw-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cw-text-muted);
+  border-bottom: 1px solid var(--cw-border);
+}
+.cw-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.875rem;
+}
+.cw-table tr:last-child td { border-bottom: none; }
+.cw-table tr:hover td { background: rgba(255,255,255,0.02); }
