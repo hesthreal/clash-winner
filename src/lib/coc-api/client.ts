@@ -25,10 +25,10 @@ const RATE_LIMIT_KEY = "coc_api_rate_limit";
 // ─── Internal fetch helper ────────────────────────────────────
 
 async function cocFetch<T>(path: string): Promise<CocApiResult<T>> {
-  if (!API_TOKEN) {
+  if (!API_TOKEN || API_TOKEN.includes("your_clash_api_token_here")) {
     return {
       success: false,
-      error: { reason: "Configuration error", message: "CLASH_API_TOKEN is not set" },
+      error: { reason: "Configuration error", message: "CLASH_API_TOKEN tanımlanmamış veya geçersiz." },
       statusCode: 500,
     };
   }
@@ -42,7 +42,7 @@ async function cocFetch<T>(path: string): Promise<CocApiResult<T>> {
     if (current > RATE_LIMIT_PER_MINUTE) {
       return {
         success: false,
-        error: { reason: "rate_limit", message: "Too many requests to Clash API. Please try again in a moment." },
+        error: { reason: "rate_limit", message: "Çok fazla istek yapıldı. Lütfen biraz bekleyin." },
         statusCode: 429,
       };
     }
@@ -54,7 +54,7 @@ async function cocFetch<T>(path: string): Promise<CocApiResult<T>> {
     const url = `${BASE_URL}${path}`;
     const response = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${API_TOKEN}`,
+        Authorization: `Bearer ${API_TOKEN.trim()}`,
         Accept: "application/json",
       },
       next: { revalidate: 0 }, // Always fresh from CoC API; we handle caching ourselves
@@ -68,11 +68,14 @@ async function cocFetch<T>(path: string): Promise<CocApiResult<T>> {
         // Non-JSON error body
       }
 
+      const reason = errorBody.reason ?? mapStatusToReason(response.status);
+      const message = errorBody.message ?? response.statusText;
+
       return {
         success: false,
         error: {
-          reason: errorBody.reason ?? mapStatusToReason(response.status),
-          message: errorBody.message ?? response.statusText,
+          reason,
+          message: `${reason}: ${message}`,
         },
         statusCode: response.status,
       };
@@ -85,7 +88,7 @@ async function cocFetch<T>(path: string): Promise<CocApiResult<T>> {
       success: false,
       error: {
         reason: "network_error",
-        message: error instanceof Error ? error.message : "Network request failed",
+        message: error instanceof Error ? error.message : "Ağ bağlantı hatası",
       },
       statusCode: 0,
     };
@@ -95,57 +98,37 @@ async function cocFetch<T>(path: string): Promise<CocApiResult<T>> {
 function mapStatusToReason(status: number): string {
   switch (status) {
     case 400: return "bad_request";
-    case 403: return "forbidden";
+    case 403: return "accessDenied";
     case 404: return "not_found";
     case 429: return "throttled";
     case 500: return "server_error";
     case 503: return "service_unavailable";
-    default: return "unknown_error";
+    default: return `http_${status}`;
   }
 }
 
 // ─── Public API functions ─────────────────────────────────────
 
-/**
- * Fetch a player profile by tag.
- * Tag must start with # (we URL-encode it here).
- */
 export async function fetchPlayer(tag: string): Promise<CocApiResult<CocPlayer>> {
   const encoded = encodeURIComponent(tag.startsWith("#") ? tag : `#${tag}`);
   return cocFetch<CocPlayer>(`/players/${encoded}`);
 }
 
-/**
- * Fetch a clan by tag.
- */
 export async function fetchClan(tag: string): Promise<CocApiResult<CocClan>> {
   const encoded = encodeURIComponent(tag.startsWith("#") ? tag : `#${tag}`);
   return cocFetch<CocClan>(`/clans/${encoded}`);
 }
 
-/**
- * Fetch current war for a clan.
- * Returns notInWar state if clan is not in war.
- * Returns 403 if war log is private.
- */
 export async function fetchCurrentWar(clanTag: string): Promise<CocApiResult<CocCurrentWar>> {
   const encoded = encodeURIComponent(clanTag.startsWith("#") ? clanTag : `#${clanTag}`);
   return cocFetch<CocCurrentWar>(`/clans/${encoded}/currentwar`);
 }
 
-/**
- * Fetch CWL league group for a clan.
- * Only available during CWL season.
- */
 export async function fetchCwlGroup(clanTag: string): Promise<CocApiResult<unknown>> {
   const encoded = encodeURIComponent(clanTag.startsWith("#") ? clanTag : `#${clanTag}`);
   return cocFetch<unknown>(`/clans/${encoded}/currentwar/leaguegroup`);
 }
 
-/**
- * Fetch capital raid seasons.
- * Returns the most recent seasons.
- */
 export async function fetchCapitalRaidSeasons(clanTag: string): Promise<CocApiResult<{ items: CocCapitalRaidSeason[] }>> {
   const encoded = encodeURIComponent(clanTag.startsWith("#") ? clanTag : `#${clanTag}`);
   return cocFetch<{ items: CocCapitalRaidSeason[] }>(`/clans/${encoded}/capitalraidseasons?limit=5`);
@@ -153,22 +136,28 @@ export async function fetchCapitalRaidSeasons(clanTag: string): Promise<CocApiRe
 
 // ─── User-friendly error messages ────────────────────────────
 
-export function getApiErrorMessage(reason: string, type: "player" | "clan" = "player"): string {
-  switch (reason) {
-    case "not_found":
-      return type === "player"
-        ? "Bu oyuncu bulunamadı. Tag'i kontrol et: büyük harf ve # ile başlamalı."
-        : "Bu klan bulunamadı. Tag'i kontrol et.";
-    case "forbidden":
-      return "Bu veriye erişim yetkiniz yok (war log kapalı olabilir).";
-    case "throttled":
-    case "rate_limit":
-      return "Çok fazla istek yapıldı. Lütfen bir dakika bekleyip tekrar dene.";
-    case "network_error":
-      return "Sunucuya bağlanılamadı. İnternet bağlantını kontrol et.";
-    case "Configuration error":
-      return "Sistem yapılandırma hatası. Lütfen yöneticiyle iletişime geç.";
-    default:
-      return "Bir hata oluştu. Lütfen tekrar dene.";
+export function getApiErrorMessage(reason: string, type: "player" | "clan" = "player", rawMessage?: string): string {
+  const reasonLower = (reason || "").toLowerCase();
+
+  if (reasonLower.includes("not_found") || reasonLower.includes("notfound")) {
+    return type === "player"
+      ? "Bu oyuncu bulunamadı. Tag'i kontrol edin (# ve harfler/sayılar)."
+      : "Bu klan bulunamadı. Tag'i kontrol edin.";
   }
+
+  if (reasonLower.includes("accessdenied") || reasonLower.includes("forbidden") || reasonLower.includes("403")) {
+    return "API Anahtarı IP Kısıtlaması Hatası (HTTP 403 Access Denied): Clash of Clans API token'ınız mevcut IP adresiniz ile eşleşmiyor. Lütfen developer.clashofclans.com adresinden yeni bir Key oluşturup kendi IP adresinizi ekleyin.";
+  }
+
+  if (reasonLower.includes("throttled") || reasonLower.includes("rate_limit") || reasonLower.includes("429")) {
+    return "Çok fazla istek yapıldı. Lütfen 1 dakika bekleyip tekrar deneyin.";
+  }
+
+  if (reasonLower.includes("configuration error")) {
+    return "API Token Yapılandırma Hatası: .env.local dosyasındaki CLASH_API_TOKEN boş veya varsayılan değerde.";
+  }
+
+  return rawMessage
+    ? `API Hatası: ${rawMessage}`
+    : `API Bağlantı Hatası (${reason}). Lütfen IP adresinizi ve API Token'ınızı kontrol edin.`;
 }

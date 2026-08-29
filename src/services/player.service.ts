@@ -44,7 +44,7 @@ export async function analyzePlayer(rawTag: string): Promise<PlayerServiceResult
     if (!apiResult.success) {
       return {
         success: false,
-        error: getApiErrorMessage(apiResult.error.reason, "player"),
+        error: getApiErrorMessage(apiResult.error.reason, "player", apiResult.error.message),
         statusCode: apiResult.statusCode,
       };
     }
@@ -77,6 +77,10 @@ export async function analyzePlayer(rawTag: string): Promise<PlayerServiceResult
     return { success: true, analysis };
   } catch (error) {
     console.error("[PlayerService] Error analyzing player:", error);
-    return { success: false, error: "Analiz sırasında bir hata oluştu. Lütfen tekrar dene.", statusCode: 500 };
+    return { 
+      success: false, 
+      error: error instanceof Error ? `Analiz Hatası: ${error.message}` : "Analiz sırasında bir hata oluştu.", 
+      statusCode: 500 
+    };
   }
 }

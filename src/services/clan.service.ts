@@ -62,7 +62,7 @@ export async function analyzeClan(rawTag: string): Promise<ClanServiceResponse> 
     if (!result.data.success) {
       return {
         success: false,
-        error: getApiErrorMessage(result.data.error.reason, "clan"),
+        error: getApiErrorMessage(result.data.error.reason, "clan", result.data.error.message),
         statusCode: result.data.statusCode,
       };
     }
@@ -113,6 +113,10 @@ export async function analyzeClan(rawTag: string): Promise<ClanServiceResponse> 
     };
   } catch (error) {
     console.error("[ClanService] Error analyzing clan:", error);
-    return { success: false, error: "Klan analizi sırasında bir hata oluştu.", statusCode: 500 };
+    return { 
+      success: false, 
+      error: error instanceof Error ? `Klan Analiz Hatası: ${error.message}` : "Klan analizi sırasında bir hata oluştu.", 
+      statusCode: 500 
+    };
   }
 }
