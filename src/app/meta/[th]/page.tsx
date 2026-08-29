@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { Header, Footer } from "@/components/layout/HeaderFooter";
 import { DataSourceBadge } from "@/components/ui/DataSourceBadge";
+import { translateGameName } from "@/lib/game-data/translations";
 import { 
   Compass, Swords, Award, Shield, Sparkles, 
   ArrowLeft, CheckCircle2, Flame, Layers 
@@ -96,7 +97,7 @@ export default async function MetaPage({ params }: MetaPageProps) {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-lg text-[var(--cw-text-primary)]">
-                      Root Rider & Druid Ezici Saldırı (Smash)
+                      Kök Binici & Büyücü Kızı Ezici Saldırı (Smash)
                     </h3>
                     <span className="cw-badge cw-badge-gold text-[10px]">SAVAŞ & CWL</span>
                   </div>
@@ -112,7 +113,7 @@ export default async function MetaPage({ params }: MetaPageProps) {
                 <div>
                   <span className="font-semibold text-amber-300">Ordu Kadrosu:</span>
                   <span className="text-[var(--cw-text-secondary)] ml-2">
-                    8x Kök Binici (Root Rider), 4x Büyücü Kızı (Druid), 2x Çırak Warden, 6x Kaya Atıcı (Bowler), 3x Süper Duvar Yıkıcı
+                    8x Kök Binici (Root Rider), 4x Büyücü Kızı (Druid), 2x Çırak Koruyucu (Apprentice Warden), 6x Kaya Atıcı (Bowler), 3x Süper Duvar Yıkıcı
                   </span>
                 </div>
                 <div>
@@ -193,9 +194,9 @@ export default async function MetaPage({ params }: MetaPageProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
             <div className="cw-card p-4 space-y-2 border-t-2 border-t-amber-500">
-              <div className="text-xs font-bold text-amber-300">Barbarian King</div>
+              <div className="text-xs font-bold text-amber-300">{translateGameName("Barbarian King")}</div>
               <div className="text-sm font-extrabold text-[var(--cw-text-primary)]">
-                Giant Gauntlet + Spiky Ball
+                {translateGameName("Giant Gauntlet")} + {translateGameName("Spiky Ball")}
               </div>
               <p className="text-[11px] text-[var(--cw-text-muted)]">
                 Alan hasarı ve devasa can desteği. En popüler savaş kombinasyonu.
@@ -203,9 +204,9 @@ export default async function MetaPage({ params }: MetaPageProps) {
             </div>
 
             <div className="cw-card p-4 space-y-2 border-t-2 border-t-sky-500">
-              <div className="text-xs font-bold text-sky-300">Archer Queen</div>
+              <div className="text-xs font-bold text-sky-300">{translateGameName("Archer Queen")}</div>
               <div className="text-sm font-extrabold text-[var(--cw-text-primary)]">
-                Action Figure + Frozen Arrow
+                {translateGameName("Action Figure")} + {translateGameName("Frozen Arrow")}
               </div>
               <p className="text-[11px] text-[var(--cw-text-muted)]">
                 Düşman savunmalarını yavaşlatır ve devasa doğrudan hasar verir.
@@ -213,19 +214,19 @@ export default async function MetaPage({ params }: MetaPageProps) {
             </div>
 
             <div className="cw-card p-4 space-y-2 border-t-2 border-t-purple-500">
-              <div className="text-xs font-bold text-purple-300">Grand Warden</div>
+              <div className="text-xs font-bold text-purple-300">{translateGameName("Grand Warden")}</div>
               <div className="text-sm font-extrabold text-[var(--cw-text-primary)]">
-                Eternal Tome + Fireball
+                {translateGameName("Eternal Tome")} + {translateGameName("Fireball")}
               </div>
               <p className="text-[11px] text-[var(--cw-text-muted)]">
-                Merkez binaları Fireball ile patlatıp Eternal Tome ile koruma sağlayın.
+                Merkez binaları Fireball ile patlatıp Ebedi Kitap ile koruma sağlayın.
               </p>
             </div>
 
             <div className="cw-card p-4 space-y-2 border-t-2 border-t-emerald-500">
-              <div className="text-xs font-bold text-emerald-300">Royal Champion</div>
+              <div className="text-xs font-bold text-emerald-300">{translateGameName("Royal Champion")}</div>
               <div className="text-sm font-extrabold text-[var(--cw-text-primary)]">
-                Seeking Shield + Electro Boots
+                {translateGameName("Seeking Shield")} + {translateGameName("Electro Boots")}
               </div>
               <p className="text-[11px] text-[var(--cw-text-muted)]">
                 Hızlı temizlik ve savunma imha odaklı kombinasyon.

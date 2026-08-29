@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PlayerAnalysis } from "@/types/analytics";
 import { DataSourceBadge } from "@/components/ui/DataSourceBadge";
+import { translateGameName } from "@/lib/game-data/translations";
 import { 
   Trophy, Shield, Swords, Star, Award, ChevronRight, 
   Sparkles, AlertCircle, Info, Lock, Flame, ShieldAlert,
@@ -20,7 +21,7 @@ function getRoleTurkish(role?: string): string {
   }
 }
 
-// ─── 1. PLAYER HEADER SUMMARY (FIXED TOWN HALL BADGE OVERFLOW) ─
+// ─── 1. PLAYER HEADER SUMMARY ──────────────────────────────────
 
 export function PlayerHeaderSummary({ analysis }: { analysis: PlayerAnalysis }) {
   const { player } = analysis;
@@ -31,8 +32,6 @@ export function PlayerHeaderSummary({ analysis }: { analysis: PlayerAnalysis }) 
         
         {/* Basic Info & Town Hall Badge */}
         <div className="flex items-center gap-4">
-          
-          {/* Town Hall Badge - Sleek, Responsive, Non-overflowing */}
           <div className="px-4 py-3 rounded-2xl bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-amber-700/30 border border-amber-500/40 flex items-center gap-3 shrink-0 shadow-[0_0_20px_rgba(245,200,66,0.15)]">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 text-slate-950 font-black font-mono text-xl flex items-center justify-center shadow-lg tracking-tight">
               {player.townHallLevel}
@@ -349,7 +348,7 @@ export function RushAnalysisCard({ analysis }: { analysis: PlayerAnalysis }) {
   );
 }
 
-// ─── 4. HERO & EQUIPMENT SECTION ───────────────────────────────
+// ─── 4. HERO & EQUIPMENT SECTION (100% TURKISH TRANSLATIONS) ──
 
 export function HeroAndEquipmentSection({ analysis }: { analysis: PlayerAnalysis }) {
   const { player } = analysis;
@@ -371,6 +370,7 @@ export function HeroAndEquipmentSection({ analysis }: { analysis: PlayerAnalysis
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {heroes.map((hero) => {
+          const trHeroName = translateGameName(hero.name);
           const isMax = hero.level >= hero.maxLevel;
           const percent = Math.min(100, Math.round((hero.level / hero.maxLevel) * 100));
 
@@ -379,7 +379,7 @@ export function HeroAndEquipmentSection({ analysis }: { analysis: PlayerAnalysis
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-bold text-[var(--cw-text-primary)] text-base flex items-center gap-2">
-                    {hero.name}
+                    {trHeroName}
                     {isMax && <span className="cw-badge cw-badge-gold text-[10px]">MAX SEVİYE</span>}
                   </h3>
                   <div className="text-xs text-[var(--cw-text-muted)]">
@@ -405,8 +405,8 @@ export function HeroAndEquipmentSection({ analysis }: { analysis: PlayerAnalysis
                   <div className="grid grid-cols-2 gap-2">
                     {hero.equipment.map((eq) => (
                       <div key={eq.name} className="bg-[var(--cw-bg-surface)] p-2 rounded-lg border border-[var(--cw-border)] text-xs flex items-center justify-between">
-                        <span className="font-medium text-[var(--cw-text-primary)] truncate" title={eq.name}>
-                          {eq.name}
+                        <span className="font-medium text-[var(--cw-text-primary)] truncate" title={translateGameName(eq.name)}>
+                          {translateGameName(eq.name)}
                         </span>
                         <span className="font-mono font-bold text-amber-400 text-[11px]">
                           Lvl {eq.level}/{eq.maxLevel}
@@ -424,7 +424,7 @@ export function HeroAndEquipmentSection({ analysis }: { analysis: PlayerAnalysis
   );
 }
 
-// ─── 5. BUILDER BASE CARD (API CAPABILITY EXTENSION) ───────────
+// ─── 5. BUILDER BASE CARD (100% TURKISH TRANSLATIONS) ──────────
 
 export function BuilderBaseCard({ analysis }: { analysis: PlayerAnalysis }) {
   const { player } = analysis;
@@ -432,7 +432,6 @@ export function BuilderBaseCard({ analysis }: { analysis: PlayerAnalysis }) {
 
   if (!bhLevel) return null;
 
-  const builderTroops = player.troops.filter(t => t.village === "builderBase");
   const builderHeroes = player.heroes.filter(h => h.village === "builderBase");
 
   return (
@@ -453,7 +452,7 @@ export function BuilderBaseCard({ analysis }: { analysis: PlayerAnalysis }) {
         <div className="bg-[var(--cw-bg-elevated)] p-4 rounded-xl border border-[var(--cw-border)] text-center">
           <div className="text-[10px] font-bold uppercase text-[var(--cw-text-muted)]">İnşaatçı Binası</div>
           <div className="text-3xl font-extrabold font-mono text-purple-400 my-1">BH {bhLevel}</div>
-          <div className="text-[10px] text-[var(--cw-text-muted)]">Level {bhLevel}</div>
+          <div className="text-[10px] text-[var(--cw-text-muted)]">Seviye {bhLevel}</div>
         </div>
 
         <div className="bg-[var(--cw-bg-elevated)] p-4 rounded-xl border border-[var(--cw-border)] text-center">
@@ -480,7 +479,7 @@ export function BuilderBaseCard({ analysis }: { analysis: PlayerAnalysis }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {builderHeroes.map((h) => (
               <div key={h.name} className="bg-[var(--cw-bg-surface)] p-3 rounded-lg border border-[var(--cw-border)] flex items-center justify-between text-xs">
-                <span className="font-semibold text-[var(--cw-text-primary)]">{h.name}</span>
+                <span className="font-semibold text-[var(--cw-text-primary)]">{translateGameName(h.name)}</span>
                 <span className="font-mono font-bold text-purple-400">Seviye {h.level} / {h.maxLevel}</span>
               </div>
             ))}
@@ -491,7 +490,7 @@ export function BuilderBaseCard({ analysis }: { analysis: PlayerAnalysis }) {
   );
 }
 
-// ─── 6. ACHIEVEMENTS CARD (API CAPABILITY EXTENSION) ───────────
+// ─── 6. ACHIEVEMENTS CARD ──────────────────────────────────────
 
 export function AchievementsCard({ analysis }: { analysis: PlayerAnalysis }) {
   const { achievements } = analysis.player;
