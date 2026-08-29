@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { Header, Footer } from "@/components/layout/HeaderFooter";
 import { DataSourceBadge } from "@/components/ui/DataSourceBadge";
 import { translateGameName } from "@/lib/game-data/translations";
+import { getMetaForTownHall } from "@/lib/game-data/meta-armies";
 import { 
   Compass, Swords, Award, Shield, Sparkles, 
   ArrowLeft, CheckCircle2, Flame, Layers 
@@ -24,6 +25,7 @@ export async function generateMetadata({ params }: MetaPageProps): Promise<Metad
 export default async function MetaPage({ params }: MetaPageProps) {
   const resolvedParams = await params;
   const thLevel = parseInt(resolvedParams.th.replace(/\D/g, "")) || 18;
+  const metaData = getMetaForTownHall(thLevel);
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--cw-bg-base)]">
@@ -49,10 +51,10 @@ export default async function MetaPage({ params }: MetaPageProps) {
             <Link
               key={level}
               href={`/meta/th${level}`}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold shrink-0 transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold shrink-0 transition-all ${
                 level === thLevel
-                  ? "bg-[var(--cw-gold)] text-slate-950 shadow-[0_0_12px_rgba(245,200,66,0.3)]"
-                  : "bg-[var(--cw-bg-elevated)] text-[var(--cw-text-secondary)] hover:text-white"
+                  ? "bg-[var(--cw-gold)] text-slate-950 shadow-[0_0_14px_rgba(245,200,66,0.35)] scale-105"
+                  : "bg-[var(--cw-bg-elevated)] text-[var(--cw-text-secondary)] hover:text-white hover:bg-[var(--cw-bg-card-hover)]"
               }`}
             >
               TH {level}
@@ -61,17 +63,17 @@ export default async function MetaPage({ params }: MetaPageProps) {
         </div>
 
         {/* Header Summary */}
-        <div className="cw-card p-6 border-l-4 border-l-[var(--cw-purple)] bg-gradient-to-r from-[var(--cw-bg-card)] via-[var(--cw-bg-surface)] to-[var(--cw-bg-card)]">
+        <div className="cw-card p-6 border-l-4 border-l-[var(--cw-purple)] bg-gradient-to-r from-[var(--cw-bg-card)] via-[var(--cw-bg-surface)] to-[var(--cw-bg-card)] shadow-lg">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--cw-text-primary)]">
-                  Town Hall {thLevel} Meta Stratejileri
+                  Town Hall {thLevel} Özel Meta Stratejileri
                 </h1>
                 <DataSourceBadge source="static_game_db" label="Meta Veritabanı" />
               </div>
               <p className="text-xs text-[var(--cw-text-secondary)] max-w-2xl">
-                Ağustos 2026 oyun sürümüne göre TH{thLevel} seviyesinde en çok kazandıran saldırı orduları ve Hero Equipment kombinasyonları.
+                Ağustos 2026 oyun sürümüne göre TH{thLevel} seviyesinde en çok kazandıran özel saldırı orduları ve Hero Equipment kombinasyonları.
               </p>
             </div>
             <div className="px-3 py-1 rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold">
@@ -84,157 +86,94 @@ export default async function MetaPage({ params }: MetaPageProps) {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-[var(--cw-text-primary)] flex items-center gap-2">
-              <Swords className="w-5 h-5 text-amber-400" /> TH{thLevel} En Güçlü Meta Orduları
+              <Swords className="w-5 h-5 text-amber-400" /> TH{thLevel} En Güçlü Meta Orduları ({metaData.armies.length})
             </h2>
             <span className="text-xs text-[var(--cw-text-muted)]">3 Yıldız Saldırı Stratejileri</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* Army 1 */}
-            <div className="cw-card p-6 space-y-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-lg text-[var(--cw-text-primary)]">
-                      Kök Binici & Büyücü Kızı Ezici Saldırı (Smash)
-                    </h3>
-                    <span className="cw-badge cw-badge-gold text-[10px]">SAVAŞ & CWL</span>
+            {metaData.armies.map((army, index) => (
+              <div key={army.name} className="cw-card p-6 space-y-4 hover:border-amber-500/30 transition-colors">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h3 className="font-bold text-lg text-[var(--cw-text-primary)]">
+                        {army.name}
+                      </h3>
+                      <span className={`cw-badge text-[10px] ${index === 0 ? "cw-badge-gold" : "cw-badge-blue"}`}>
+                        {army.category}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[var(--cw-text-muted)]">{army.type}</p>
                   </div>
-                  <p className="text-xs text-[var(--cw-text-muted)]">Kara Tipi / Yüksek Dayanıklılık</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-extrabold font-mono text-amber-400">96/100</div>
-                  <div className="text-[10px] text-[var(--cw-text-muted)]">Meta Skoru</div>
-                </div>
-              </div>
-
-              <div className="bg-[var(--cw-bg-elevated)] p-3 rounded-lg border border-[var(--cw-border)] text-xs space-y-2">
-                <div>
-                  <span className="font-semibold text-amber-300">Ordu Kadrosu:</span>
-                  <span className="text-[var(--cw-text-secondary)] ml-2">
-                    8x Kök Binici (Root Rider), 4x Büyücü Kızı (Druid), 2x Çırak Koruyucu (Apprentice Warden), 6x Kaya Atıcı (Bowler), 3x Süper Duvar Yıkıcı
-                  </span>
-                </div>
-                <div>
-                  <span className="font-semibold text-purple-300">Büyüler:</span>
-                  <span className="text-[var(--cw-text-secondary)] ml-2">
-                    3x Öfke Büyüsü, 2x Sarmaşık Büyüsü (Overgrowth), 2x Dondurma Büyüsü
-                  </span>
-                </div>
-                <div>
-                  <span className="font-semibold text-sky-300">Kuşatma Makinesi:</span>
-                  <span className="text-[var(--cw-text-secondary)] ml-2">
-                    Kuşatma Kışlası (İçinde Yeti + Bowler)
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-xs text-[var(--cw-text-secondary)] leading-relaxed">
-                <strong>Saldırı Adımları:</strong> Kuşatma Kışlası ile bir kanadı temizleyin. Kök Biniciler ile merkeze girip Overgrowth büyüsü ile kritik savunmaları dondurun. Druid iyileştirmesi ile kahramanlarınızı koruyun.
-              </div>
-            </div>
-
-            {/* Army 2 */}
-            <div className="cw-card p-6 space-y-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-lg text-[var(--cw-text-primary)]">
-                      Süper Ejderha & Şimşek Laloon
-                    </h3>
-                    <span className="cw-badge cw-badge-blue text-[10px]">HAVA / KUPA KASMA</span>
+                  <div className="text-right shrink-0">
+                    <div className="text-base font-extrabold font-mono text-amber-400">{army.metaScore}/100</div>
+                    <div className="text-[10px] text-[var(--cw-text-muted)]">Meta Skoru</div>
                   </div>
-                  <p className="text-xs text-[var(--cw-text-muted)]">Hava Tipi / Temizlik Saldırısı</p>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-extrabold font-mono text-sky-400">92/100</div>
-                  <div className="text-[10px] text-[var(--cw-text-muted)]">Meta Skoru</div>
+
+                <div className="bg-[var(--cw-bg-elevated)] p-3.5 rounded-lg border border-[var(--cw-border)] text-xs space-y-2">
+                  <div>
+                    <span className="font-semibold text-amber-300">Ordu Kadrosu:</span>
+                    <span className="text-[var(--cw-text-secondary)] ml-2 leading-relaxed block sm:inline">
+                      {army.composition}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-purple-300">Büyüler:</span>
+                    <span className="text-[var(--cw-text-secondary)] ml-2 leading-relaxed block sm:inline">
+                      {army.spells}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-sky-300">Kuşatma Makinesi:</span>
+                    <span className="text-[var(--cw-text-secondary)] ml-2 leading-relaxed block sm:inline">
+                      {army.siege}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-xs text-[var(--cw-text-secondary)] leading-relaxed space-y-1">
+                  <p>{army.description}</p>
+                  <div className="pt-2 border-t border-[var(--cw-border)]">
+                    <strong className="text-amber-400">Saldırı Adımları:</strong> {army.steps}
+                  </div>
                 </div>
               </div>
-
-              <div className="bg-[var(--cw-bg-elevated)] p-3 rounded-lg border border-[var(--cw-border)] text-xs space-y-2">
-                <div>
-                  <span className="font-semibold text-amber-300">Ordu Kadrosu:</span>
-                  <span className="text-[var(--cw-text-secondary)] ml-2">
-                    5x Süper Ejderha, 14x Balon, 3x Bebek Ejderha, 4x Dalkavuk (Minion)
-                  </span>
-                </div>
-                <div>
-                  <span className="font-semibold text-purple-300">Büyüler:</span>
-                  <span className="text-[var(--cw-text-secondary)] ml-2">
-                    6x Şimşek Büyüsü, 1x Deprem Büyüsü, 3x Dondurma Büyüsü
-                  </span>
-                </div>
-                <div>
-                  <span className="font-semibold text-sky-300">Kuşatma Makinesi:</span>
-                  <span className="text-[var(--cw-text-secondary)] ml-2">
-                    Savaş Balonu (İçinde Süper Büyücü)
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-xs text-[var(--cw-text-secondary)] leading-relaxed">
-                <strong>Saldırı Adımları:</strong> Şimşek + Deprem ile 1 Hava Savunması veya Inferno kulesini imha edin. Savaş Balonu ile belediye binasını indirin, hava ordusu ile kalan köyü temizleyin.
-              </div>
-            </div>
-
+            ))}
           </div>
         </div>
 
         {/* RECOMMENDED HERO EQUIPMENT */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-[var(--cw-text-primary)] flex items-center gap-2">
-              <Award className="w-5 h-5 text-purple-400" /> TH{thLevel} Tavsiye Edilen Hero Equipment Kombinasyonları
-            </h2>
-            <span className="text-xs text-[var(--cw-text-muted)]">Savaş Metası</span>
+        {metaData.equipment && metaData.equipment.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-[var(--cw-text-primary)] flex items-center gap-2">
+                <Award className="w-5 h-5 text-purple-400" /> TH{thLevel} Tavsiye Edilen Hero Equipment Kombinasyonları
+              </h2>
+              <span className="text-xs text-[var(--cw-text-muted)]">Savaş Metası</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {metaData.equipment.map((eq, i) => {
+                const borderColors = ["border-t-amber-500", "border-t-sky-500", "border-t-purple-500", "border-t-emerald-500"];
+                const textColors = ["text-amber-300", "text-sky-300", "text-purple-300", "text-emerald-300"];
+                
+                return (
+                  <div key={eq.hero} className={`cw-card p-4 space-y-2 border-t-2 ${borderColors[i % 4]}`}>
+                    <div className={`text-xs font-bold ${textColors[i % 4]}`}>{eq.hero}</div>
+                    <div className="text-sm font-extrabold text-[var(--cw-text-primary)]">
+                      {eq.pair}
+                    </div>
+                    <p className="text-[11px] text-[var(--cw-text-muted)] leading-relaxed">
+                      {eq.description}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            <div className="cw-card p-4 space-y-2 border-t-2 border-t-amber-500">
-              <div className="text-xs font-bold text-amber-300">{translateGameName("Barbarian King")}</div>
-              <div className="text-sm font-extrabold text-[var(--cw-text-primary)]">
-                {translateGameName("Giant Gauntlet")} + {translateGameName("Spiky Ball")}
-              </div>
-              <p className="text-[11px] text-[var(--cw-text-muted)]">
-                Alan hasarı ve devasa can desteği. En popüler savaş kombinasyonu.
-              </p>
-            </div>
-
-            <div className="cw-card p-4 space-y-2 border-t-2 border-t-sky-500">
-              <div className="text-xs font-bold text-sky-300">{translateGameName("Archer Queen")}</div>
-              <div className="text-sm font-extrabold text-[var(--cw-text-primary)]">
-                {translateGameName("Action Figure")} + {translateGameName("Frozen Arrow")}
-              </div>
-              <p className="text-[11px] text-[var(--cw-text-muted)]">
-                Düşman savunmalarını yavaşlatır ve devasa doğrudan hasar verir.
-              </p>
-            </div>
-
-            <div className="cw-card p-4 space-y-2 border-t-2 border-t-purple-500">
-              <div className="text-xs font-bold text-purple-300">{translateGameName("Grand Warden")}</div>
-              <div className="text-sm font-extrabold text-[var(--cw-text-primary)]">
-                {translateGameName("Eternal Tome")} + {translateGameName("Fireball")}
-              </div>
-              <p className="text-[11px] text-[var(--cw-text-muted)]">
-                Merkez binaları Fireball ile patlatıp Ebedi Kitap ile koruma sağlayın.
-              </p>
-            </div>
-
-            <div className="cw-card p-4 space-y-2 border-t-2 border-t-emerald-500">
-              <div className="text-xs font-bold text-emerald-300">{translateGameName("Royal Champion")}</div>
-              <div className="text-sm font-extrabold text-[var(--cw-text-primary)]">
-                {translateGameName("Seeking Shield")} + {translateGameName("Electro Boots")}
-              </div>
-              <p className="text-[11px] text-[var(--cw-text-muted)]">
-                Hızlı temizlik ve savunma imha odaklı kombinasyon.
-              </p>
-            </div>
-
-          </div>
-        </div>
+        )}
 
       </main>
 
