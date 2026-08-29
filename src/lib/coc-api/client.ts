@@ -15,7 +15,8 @@ import type {
 } from "@/types/coc-api";
 import { redis } from "@/lib/cache/redis";
 
-const BASE_URL = process.env.CLASH_API_BASE_URL ?? "https://api.clashofclans.com/v1";
+// Default to RoyaleAPI proxy (128.199.220.7) for zero-config Vercel + Local compatibility
+const BASE_URL = process.env.CLASH_API_BASE_URL || "https://cocproxy.royaleapi.dev/v1";
 const API_TOKEN = process.env.CLASH_API_TOKEN;
 
 // Rate limit: max requests per minute per instance
@@ -75,7 +76,7 @@ async function cocFetch<T>(path: string): Promise<CocApiResult<T>> {
         success: false,
         error: {
           reason,
-          message: `${reason}: ${message}`,
+          message: `${reason}: ${message} (Hedef URL: ${url})`,
         },
         statusCode: response.status,
       };
@@ -146,7 +147,7 @@ export function getApiErrorMessage(reason: string, type: "player" | "clan" = "pl
   }
 
   if (reasonLower.includes("accessdenied") || reasonLower.includes("forbidden") || reasonLower.includes("403")) {
-    return "API Anahtarı IP Kısıtlaması Hatası (HTTP 403 Access Denied): Clash of Clans API token'ınız mevcut IP adresiniz ile eşleşmiyor. Lütfen developer.clashofclans.com adresinden yeni bir Key oluşturup kendi IP adresinizi ekleyin.";
+    return `API Anahtarı IP Kısıtlaması Hatası (HTTP 403 Access Denied): Clash of Clans API token'ınız istek atılan IP adresi ile eşleşmiyor. [Detay: ${rawMessage || reason}]`;
   }
 
   if (reasonLower.includes("throttled") || reasonLower.includes("rate_limit") || reasonLower.includes("429")) {
@@ -154,7 +155,7 @@ export function getApiErrorMessage(reason: string, type: "player" | "clan" = "pl
   }
 
   if (reasonLower.includes("configuration error")) {
-    return "API Token Yapılandırma Hatası: .env.local dosyasındaki CLASH_API_TOKEN boş veya varsayılan değerde.";
+    return "API Token Yapılandırma Hatası: .env.local veya Vercel ortam değişkenlerinde CLASH_API_TOKEN tanımlı değil.";
   }
 
   return rawMessage
