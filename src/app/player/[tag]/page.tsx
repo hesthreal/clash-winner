@@ -6,6 +6,8 @@ import {
   ProgressOverviewCard,
   RushAnalysisCard,
   HeroAndEquipmentSection,
+  BuilderBaseCard,
+  AchievementsCard,
   BuildingDisclaimerCard,
 } from "@/components/player/PlayerComponents";
 import { AlertCircle, Search, ArrowLeft } from "lucide-react";
@@ -62,7 +64,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
           </div>
         ) : (
           <>
-            {/* Player Summary */}
+            {/* Player Summary (Fixed TH badge overflow) */}
             <PlayerHeaderSummary analysis={result.analysis} />
 
             {/* Main Grid Layout */}
@@ -76,6 +78,12 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
 
               {/* Heroes & Equipment */}
               <HeroAndEquipmentSection analysis={result.analysis} />
+
+              {/* Builder Base Intelligence */}
+              <BuilderBaseCard analysis={result.analysis} />
+
+              {/* Achievements & Badges */}
+              <AchievementsCard analysis={result.analysis} />
 
               {/* Building & Defense Transparent Disclaimer */}
               <BuildingDisclaimerCard />

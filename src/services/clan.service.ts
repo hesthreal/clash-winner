@@ -3,11 +3,11 @@
  * Fetches clan profile, war state, capital data & calculates clan power score
  */
 
-import { fetchClan, fetchCurrentWar, getApiErrorMessage } from "@/lib/coc-api/client";
+import { fetchClan, fetchCurrentWar, fetchCapitalRaidSeasons, getApiErrorMessage } from "@/lib/coc-api/client";
 import { getCached, cacheKey } from "@/lib/cache/redis";
 import { CACHE_TTL } from "@/config/cache-ttl";
 import { validateClanTag } from "@/lib/validation/tags";
-import type { CocClan, CocCurrentWar } from "@/types/coc-api";
+import type { CocClan, CocCurrentWar, CocCapitalRaidSeason } from "@/types/coc-api";
 
 export interface ClanPowerScore {
   overall: number;          // 0-100
@@ -21,6 +21,7 @@ export interface ClanPowerScore {
 export interface ClanAnalysisResult {
   clan: CocClan;
   currentWar?: CocCurrentWar;
+  capitalRaidSeasons?: CocCapitalRaidSeason[];
   powerScore: ClanPowerScore;
   analyzedAt: Date;
   cached: boolean;
@@ -50,10 +51,14 @@ export async function analyzeClan(rawTag: string): Promise<ClanServiceResponse> 
         const warRes = await fetchCurrentWar(tag);
         const currentWar = warRes.success ? warRes.data : undefined;
 
+        const capitalRes = await fetchCapitalRaidSeasons(tag);
+        const capitalRaidSeasons = capitalRes.success ? capitalRes.data.items : undefined;
+
         return {
           success: true as const,
           clan: clanRes.data,
           currentWar,
+          capitalRaidSeasons,
         };
       },
       CACHE_TTL.clan
@@ -67,7 +72,7 @@ export async function analyzeClan(rawTag: string): Promise<ClanServiceResponse> 
       };
     }
 
-    const { clan, currentWar } = result.data;
+    const { clan, currentWar, capitalRaidSeasons } = result.data;
 
     // Calculate Town Hall distribution from member list
     const thDistribution: Record<string, number> = {};
@@ -105,6 +110,7 @@ export async function analyzeClan(rawTag: string): Promise<ClanServiceResponse> 
       analysis: {
         clan,
         currentWar,
+        capitalRaidSeasons,
         powerScore,
         analyzedAt: new Date(),
         cached: result.cached,

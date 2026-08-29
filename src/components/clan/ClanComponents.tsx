@@ -5,7 +5,8 @@ import type { ClanAnalysisResult } from "@/services/clan.service";
 import { DataSourceBadge } from "@/components/ui/DataSourceBadge";
 import { 
   Shield, Users, Trophy, Swords, Flame, Award, 
-  ChevronDown, Search, Filter, AlertCircle, ExternalLink
+  ChevronDown, Search, Filter, AlertCircle, ExternalLink,
+  Crown, Coins, Castle, Star, CheckCircle2
 } from "lucide-react";
 import Link from "next/link";
 
@@ -192,7 +193,158 @@ export function ClanPowerScoreCard({ analysis }: { analysis: ClanAnalysisResult 
   );
 }
 
-// ─── 3. CLAN TH BALANCE CARD ───────────────────────────────────
+// ─── 3. CLAN WAR LIVE CARD (API CAPABILITY EXTENSION) ──────────
+
+export function ClanWarLiveCard({ analysis }: { analysis: ClanAnalysisResult }) {
+  const { currentWar } = analysis;
+
+  if (!currentWar || currentWar.state === "notInWar") {
+    return (
+      <div className="cw-card p-6 border-l-4 border-l-slate-500">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-bold text-sm text-[var(--cw-text-primary)] flex items-center gap-2">
+              <Swords className="w-4 h-4 text-[var(--cw-text-muted)]" /> Aktif Klan Savaşı Durumu
+            </h3>
+            <p className="text-xs text-[var(--cw-text-muted)] mt-0.5">
+              Klan şu an aktif bir savaşta değil veya savaş günlüğü kapalı.
+            </p>
+          </div>
+          <DataSourceBadge source="official_api" />
+        </div>
+      </div>
+    );
+  }
+
+  const { state, clan, opponent, teamSize } = currentWar;
+  const stateLabel =
+    state === "inWar" ? "SAVAŞ DEVAM EDİYOR" :
+    state === "preparation" ? "SAVAŞ HAZIRLIK EVRESİ" :
+    state === "warEnded" ? "SAVAŞ TAMAMLANDI" : "SAVAŞ YOK";
+
+  const stateBadgeClass =
+    state === "inWar" ? "cw-badge-red" :
+    state === "preparation" ? "cw-badge-gold" : "cw-badge-gray";
+
+  return (
+    <div className="cw-card p-6 border-l-4 border-l-red-500">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-bold text-[var(--cw-text-primary)] flex items-center gap-2">
+            <Swords className="w-5 h-5 text-red-400" /> Canlı Klan Savaşı Analizi ({teamSize}v{teamSize})
+          </h2>
+          <p className="text-xs text-[var(--cw-text-muted)]">
+            Aktif savaş durumu, yıldız sayıları ve yıkım yüzdeleri
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={`cw-badge ${stateBadgeClass}`}>{stateLabel}</span>
+          <DataSourceBadge source="official_api" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {/* Our Clan */}
+        <div className="bg-[var(--cw-bg-elevated)] p-4 rounded-xl border border-emerald-500/30">
+          <div className="text-xs font-bold text-emerald-400 mb-1">{clan?.name || "Klanımız"}</div>
+          <div className="flex items-center justify-between">
+            <div className="text-2xl font-extrabold font-mono text-yellow-400 flex items-center gap-1">
+              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" /> {clan?.stars || 0}
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-bold font-mono text-[var(--cw-text-primary)]">
+                %{Math.round(clan?.destructionPercentage || 0)} Yıkım
+              </div>
+              <div className="text-[10px] text-[var(--cw-text-muted)]">
+                {clan?.attacks || 0} Saldırı Kullanıldı
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Opponent Clan */}
+        <div className="bg-[var(--cw-bg-elevated)] p-4 rounded-xl border border-red-500/30">
+          <div className="text-xs font-bold text-red-400 mb-1">{opponent?.name || "Rakip Klan"}</div>
+          <div className="flex items-center justify-between">
+            <div className="text-2xl font-extrabold font-mono text-yellow-400 flex items-center gap-1">
+              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" /> {opponent?.stars || 0}
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-bold font-mono text-[var(--cw-text-primary)]">
+                %{Math.round(opponent?.destructionPercentage || 0)} Yıkım
+              </div>
+              <div className="text-[10px] text-[var(--cw-text-muted)]">
+                {opponent?.attacks || 0} Saldırı Kullanıldı
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ─── 4. CLAN CAPITAL CARD (API CAPABILITY EXTENSION) ───────────
+
+export function ClanCapitalCard({ analysis }: { analysis: ClanAnalysisResult }) {
+  const { capitalRaidSeasons } = analysis;
+
+  if (!capitalRaidSeasons || capitalRaidSeasons.length === 0) return null;
+
+  const latestSeason = capitalRaidSeasons[0];
+
+  return (
+    <div className="cw-card p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-bold text-[var(--cw-text-primary)] flex items-center gap-2">
+            <Castle className="w-5 h-5 text-amber-400" /> Clan Capital Raid Hafta Sonu Performansı
+          </h2>
+          <p className="text-xs text-[var(--cw-text-muted)]">
+            En son Raid hafta sonu yağmalanan Capital Gold ve tamamlanan baskınlar
+          </p>
+        </div>
+        <DataSourceBadge source="official_api" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-[var(--cw-bg-elevated)] p-4 rounded-xl border border-[var(--cw-border)] text-center">
+          <div className="text-[10px] uppercase font-bold text-[var(--cw-text-muted)] flex items-center justify-center gap-1">
+            <Coins className="w-3.5 h-3.5 text-amber-400" /> Toplam Yağmalanan Altın
+          </div>
+          <div className="text-2xl font-extrabold font-mono text-amber-400 my-1">
+            {(latestSeason.capitalTotalLoot || 0).toLocaleString()}
+          </div>
+          <div className="text-[10px] text-[var(--cw-text-muted)]">Capital Gold</div>
+        </div>
+
+        <div className="bg-[var(--cw-bg-elevated)] p-4 rounded-xl border border-[var(--cw-border)] text-center">
+          <div className="text-[10px] uppercase font-bold text-[var(--cw-text-muted)] flex items-center justify-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Tamamlanan Baskınlar
+          </div>
+          <div className="text-2xl font-extrabold font-mono text-emerald-400 my-1">
+            {latestSeason.raidsCompleted || 0}
+          </div>
+          <div className="text-[10px] text-[var(--cw-text-muted)]">Klan Baskını</div>
+        </div>
+
+        <div className="bg-[var(--cw-bg-elevated)] p-4 rounded-xl border border-[var(--cw-border)] text-center">
+          <div className="text-[10px] uppercase font-bold text-[var(--cw-text-muted)] flex items-center justify-center gap-1">
+            <Flame className="w-3.5 h-3.5 text-purple-400" /> Yıkılan Bölgeler
+          </div>
+          <div className="text-2xl font-extrabold font-mono text-purple-400 my-1">
+            {latestSeason.enemyDistrictsDestroyed || 0}
+          </div>
+          <div className="text-[10px] text-[var(--cw-text-muted)]">Bölge (District)</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── 5. CLAN TH BALANCE CARD ───────────────────────────────────
 
 export function ClanThBalanceCard({ analysis }: { analysis: ClanAnalysisResult }) {
   const { thDistribution } = analysis.powerScore;
@@ -239,7 +391,7 @@ export function ClanThBalanceCard({ analysis }: { analysis: ClanAnalysisResult }
   );
 }
 
-// ─── 4. CLAN MEMBER TABLE ──────────────────────────────────────
+// ─── 6. CLAN MEMBER TABLE ──────────────────────────────────────
 
 export function ClanMemberTable({ analysis }: { analysis: ClanAnalysisResult }) {
   const { memberList } = analysis.clan;

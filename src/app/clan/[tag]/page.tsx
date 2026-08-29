@@ -4,6 +4,8 @@ import { Header, Footer } from "@/components/layout/HeaderFooter";
 import {
   ClanHeaderSummary,
   ClanPowerScoreCard,
+  ClanWarLiveCard,
+  ClanCapitalCard,
   ClanThBalanceCard,
   ClanMemberTable,
 } from "@/components/clan/ClanComponents";
@@ -19,7 +21,7 @@ export async function generateMetadata({ params }: ClanPageProps): Promise<Metad
   const tag = decodeURIComponent(resolvedParams.tag);
   return {
     title: `${tag} Klan Analizi — ClashWinner`,
-    description: `${tag} etiketli Clash of Clans klanının güç skoru, üye kadrosu ve Town Hall dağılımı analizi.`,
+    description: `${tag} etiketli Clash of Clans klanının güç skoru, üye kadrosu, aktif savaşı ve Clan Capital baskın analizi.`,
   };
 }
 
@@ -69,6 +71,12 @@ export default async function ClanPage({ params }: ClanPageProps) {
               
               {/* Clan Power Score */}
               <ClanPowerScoreCard analysis={result.analysis} />
+
+              {/* Live Current War Status */}
+              <ClanWarLiveCard analysis={result.analysis} />
+
+              {/* Clan Capital Raid Weekend Performance */}
+              <ClanCapitalCard analysis={result.analysis} />
 
               {/* Town Hall Distribution */}
               <ClanThBalanceCard analysis={result.analysis} />

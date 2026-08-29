@@ -6,7 +6,7 @@ import { DataSourceBadge } from "@/components/ui/DataSourceBadge";
 import { 
   Trophy, Shield, Swords, Star, Award, ChevronRight, 
   Sparkles, AlertCircle, Info, Lock, Flame, ShieldAlert,
-  Layers, Hammer, RefreshCw
+  Layers, Hammer, RefreshCw, Zap, CheckCircle2, Crown, Wrench
 } from "lucide-react";
 
 // Helper for clan role Turkish translation
@@ -20,20 +20,27 @@ function getRoleTurkish(role?: string): string {
   }
 }
 
-// ─── 1. PLAYER HEADER SUMMARY ──────────────────────────────────
+// ─── 1. PLAYER HEADER SUMMARY (FIXED TOWN HALL BADGE OVERFLOW) ─
 
 export function PlayerHeaderSummary({ analysis }: { analysis: PlayerAnalysis }) {
   const { player } = analysis;
 
   return (
-    <div className="cw-card p-6 relative overflow-hidden bg-gradient-to-r from-[var(--cw-bg-card)] via-[var(--cw-bg-surface)] to-[var(--cw-bg-card)] border-l-4 border-l-[var(--cw-gold)]">
+    <div className="cw-card p-6 relative overflow-hidden bg-gradient-to-r from-[var(--cw-bg-card)] via-[var(--cw-bg-surface)] to-[var(--cw-bg-card)] border-l-4 border-l-[var(--cw-gold)] shadow-xl">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         
-        {/* Basic Info */}
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-amber-700/30 border border-amber-500/40 flex flex-col items-center justify-center shrink-0 shadow-[0_0_20px_rgba(245,200,66,0.15)]">
-            <span className="text-xs font-mono font-bold text-amber-300 uppercase">Belediye Binası</span>
-            <span className="text-2xl sm:text-3xl font-extrabold text-amber-400 font-mono">TH {player.townHallLevel}</span>
+        {/* Basic Info & Town Hall Badge */}
+        <div className="flex items-center gap-4">
+          
+          {/* Town Hall Badge - Sleek, Responsive, Non-overflowing */}
+          <div className="px-4 py-3 rounded-2xl bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-amber-700/30 border border-amber-500/40 flex items-center gap-3 shrink-0 shadow-[0_0_20px_rgba(245,200,66,0.15)]">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 text-slate-950 font-black font-mono text-xl flex items-center justify-center shadow-lg tracking-tight">
+              {player.townHallLevel}
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-amber-300/80 uppercase tracking-widest">BELEDİYE BİNASI</span>
+              <span className="text-lg font-extrabold text-amber-400 font-mono leading-none">TH {player.townHallLevel}</span>
+            </div>
           </div>
 
           <div>
@@ -58,7 +65,7 @@ export function PlayerHeaderSummary({ analysis }: { analysis: PlayerAnalysis }) 
 
               <div className="flex items-center gap-1">
                 <span className="cw-dot-online"></span>
-                <span>Level {player.expLevel} XP</span>
+                <span>Seviye {player.expLevel} XP</span>
               </div>
 
               {player.league && (
@@ -417,7 +424,134 @@ export function HeroAndEquipmentSection({ analysis }: { analysis: PlayerAnalysis
   );
 }
 
-// ─── 5. BUILDING & DEFENSE DISCLAIMER CARD ─────────────────────
+// ─── 5. BUILDER BASE CARD (API CAPABILITY EXTENSION) ───────────
+
+export function BuilderBaseCard({ analysis }: { analysis: PlayerAnalysis }) {
+  const { player } = analysis;
+  const bhLevel = player.builderHallLevel || 0;
+
+  if (!bhLevel) return null;
+
+  const builderTroops = player.troops.filter(t => t.village === "builderBase");
+  const builderHeroes = player.heroes.filter(h => h.village === "builderBase");
+
+  return (
+    <div className="cw-card p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-bold text-[var(--cw-text-primary)] flex items-center gap-2">
+            <Wrench className="w-5 h-5 text-purple-400" /> İnşaatçı Üssü (Builder Base) Analizi
+          </h2>
+          <p className="text-xs text-[var(--cw-text-muted)]">
+            İnşaatçı Binası BH {bhLevel}, kupalar ve 1v1 savaş başarıları
+          </p>
+        </div>
+        <DataSourceBadge source="official_api" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-[var(--cw-bg-elevated)] p-4 rounded-xl border border-[var(--cw-border)] text-center">
+          <div className="text-[10px] font-bold uppercase text-[var(--cw-text-muted)]">İnşaatçı Binası</div>
+          <div className="text-3xl font-extrabold font-mono text-purple-400 my-1">BH {bhLevel}</div>
+          <div className="text-[10px] text-[var(--cw-text-muted)]">Level {bhLevel}</div>
+        </div>
+
+        <div className="bg-[var(--cw-bg-elevated)] p-4 rounded-xl border border-[var(--cw-border)] text-center">
+          <div className="text-[10px] font-bold uppercase text-[var(--cw-text-muted)]">İnşaatçı Kupası</div>
+          <div className="text-3xl font-extrabold font-mono text-amber-400 my-1">
+            {(player.builderBaseTrophies || 0).toLocaleString()}
+          </div>
+          <div className="text-[10px] text-[var(--cw-text-muted)]">En İyi: {(player.bestBuilderBaseTrophies || 0).toLocaleString()}</div>
+        </div>
+
+        <div className="bg-[var(--cw-bg-elevated)] p-4 rounded-xl border border-[var(--cw-border)] text-center">
+          <div className="text-[10px] font-bold uppercase text-[var(--cw-text-muted)]">Versus Battle Zaferleri</div>
+          <div className="text-3xl font-extrabold font-mono text-emerald-400 my-1">
+            {(player.versusBattleWins || 0).toLocaleString()}
+          </div>
+          <div className="text-[10px] text-[var(--cw-text-muted)]">1v1 Karşılıklı Zafer</div>
+        </div>
+      </div>
+
+      {/* Builder Heroes */}
+      {builderHeroes.length > 0 && (
+        <div className="mb-4">
+          <div className="text-xs font-bold text-[var(--cw-text-muted)] uppercase mb-2">İnşaatçı Kahramanları</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {builderHeroes.map((h) => (
+              <div key={h.name} className="bg-[var(--cw-bg-surface)] p-3 rounded-lg border border-[var(--cw-border)] flex items-center justify-between text-xs">
+                <span className="font-semibold text-[var(--cw-text-primary)]">{h.name}</span>
+                <span className="font-mono font-bold text-purple-400">Seviye {h.level} / {h.maxLevel}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 6. ACHIEVEMENTS CARD (API CAPABILITY EXTENSION) ───────────
+
+export function AchievementsCard({ analysis }: { analysis: PlayerAnalysis }) {
+  const { achievements } = analysis.player;
+
+  if (!achievements || achievements.length === 0) return null;
+
+  const totalStars = achievements.reduce((sum, a) => sum + (a.stars || 0), 0);
+  const maxPossibleStars = achievements.length * 3;
+  const completedCount = achievements.filter(a => a.stars === 3).length;
+
+  return (
+    <div className="cw-card p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-bold text-[var(--cw-text-primary)] flex items-center gap-2">
+            <Star className="w-5 h-5 text-yellow-400" /> Başarımlar & Rozetler (Achievements)
+          </h2>
+          <p className="text-xs text-[var(--cw-text-muted)]">
+            Toplam {completedCount}/{achievements.length} başarım %100 tamamlandı
+          </p>
+        </div>
+        <DataSourceBadge source="official_api" />
+      </div>
+
+      <div className="bg-[var(--cw-bg-surface)] p-4 rounded-xl border border-[var(--cw-border)] mb-4 flex items-center justify-between">
+        <div>
+          <span className="text-xs text-[var(--cw-text-muted)]">Kazanılan Başarım Yıldızları</span>
+          <div className="text-2xl font-extrabold font-mono text-yellow-400 mt-0.5">
+            {totalStars} <span className="text-xs text-[var(--cw-text-muted)]">/ {maxPossibleStars} Yıldız</span>
+          </div>
+        </div>
+        <div className="cw-badge cw-badge-gold text-xs font-mono">
+          %{Math.round((totalStars / maxPossibleStars) * 100)} Tamamlandı
+        </div>
+      </div>
+
+      {/* Top Featured Achievements */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        {achievements.slice(0, 6).map((ach) => (
+          <div key={ach.name} className="bg-[var(--cw-bg-elevated)] p-3 rounded-lg border border-[var(--cw-border)] text-xs flex flex-col justify-between">
+            <div>
+              <div className="font-semibold text-[var(--cw-text-primary)] flex items-center justify-between mb-1">
+                <span className="truncate">{ach.name}</span>
+                <div className="flex items-center text-yellow-400 text-[10px]">
+                  {"★".repeat(ach.stars)}
+                </div>
+              </div>
+              <p className="text-[10px] text-[var(--cw-text-muted)] line-clamp-2">{ach.info}</p>
+            </div>
+            <div className="mt-2 text-[10px] font-mono text-emerald-400 text-right">
+              {ach.value.toLocaleString()} / {ach.target.toLocaleString()}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── 7. BUILDING & DEFENSE DISCLAIMER CARD ─────────────────────
 
 export function BuildingDisclaimerCard() {
   return (
